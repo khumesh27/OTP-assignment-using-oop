@@ -39,27 +39,25 @@ class OTPGenerator:
     def validate_mobile(self, num):
         return len(num) == 10 and num.isdigit()
 
-    def send_otp_over_mobile(self, target_no):
-        if self.validate_mobile(target_no):
-            self.message_sender.send_sms(target_no, self.otp)
-        else:
-            print("INVALID MOBILE NUMBER!")
-            target_no = input("ENTER AGAIN: ")
-            self.validate_mobile(target_no)
-            self.send_otp_over_mobile(target_no)
-
     def validate_email(self, mail):
         pattern = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"
         return bool(re.match(pattern, mail))
 
+    def send_otp_over_mobile(self, target_no):
+        while not self.validate_mobile(target_no):
+            print("INVALID MOBILE NUMBER!")
+            target_no = input("ENTER AGAIN: ")
+
+        self.generate_otp()
+        self.message_sender.send_sms(target_no, self.otp)
+
     def send_otp_via_email(self, mail):
-        if self.validate_email(mail):
-            self.message_sender.send_email(mail, self.otp)
-        else:
+        while not self.validate_email(mail):
             print("INVALID MAIL!")
             mail = input("ENTER AGAIN: ")
-            self.validate_email(mail)
-            self.send_otp_via_email(mail)
+
+        self.generate_otp()
+        self.message_sender.send_email(mail, self.otp)
 
 # Menu
 print("\n========================================Welcome to generate OTP========================================")
@@ -75,16 +73,8 @@ otp_generator = OTPGenerator(message_sender)
 
 if ans.lower() == "1":
     number = input("ENTER YOUR MOBILE NUMBER: ")
-    if otp_generator.validate_mobile(number):
-        otp_generator.generate_otp()
-        otp_generator.send_otp_over_mobile(number)
-    else:
-        print("INVALID MOBILE NUMBER!")
+    otp_generator.send_otp_over_mobile(number)
 
 elif ans.lower() == "2":
     recipient = input("ENTER YOUR MAIL ID:\n ")
-    if otp_generator.validate_email(recipient):
-        otp_generator.generate_otp()
-        otp_generator.send_otp_via_email(recipient)
-    else:
-        print("INVALID MAIL!")
+    otp_generator.send_otp_via_email(recipient)
